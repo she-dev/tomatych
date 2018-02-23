@@ -37,12 +37,14 @@ class App():
         self.root = tk.Tk()
         self.root.wm_attributes("-topmost", 1) # always on top
         self.label = tk.Label(font=("Helvetica Neue", 44))
+        self.xoxp_TOKEN = ''
         self.label.pack()
 
         self.buttons = tk.Frame(self.root)
         self.buttons.pack()
         tk.Button(self.buttons, text ="Start", command=lambda: self.start()).pack(side=tk.LEFT)
         tk.Button(self.buttons, text ="Cancel", command=lambda: self.cancel()).pack(side=tk.LEFT)
+        self.root.tk.call('wm', 'iconphoto', self.root._w, tk.PhotoImage(data="R0lGODlhIAAgAOMIAAAAAHkAAJcDALUhBgBlANM/JAChAPFdQv///////////////////////////////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAgALAAAAAAgACAAAASwEMlJq704622BB0ZofKDIUaQ4fuo5pSIcupK8eu1GkkM/EEDC7oMZeny/oBFQNCKDQmNz+FRKX5+D9lDoFlRIsG+55XrFPfSAvPV+RWH42Fh2q9VLN3LPHwj+AnlefYR+gIJdhX2AgUZ6inuMS5CGjH8BmAGTkJaAmZpOnJ0Cn5uKo6SZJCgfSKilRBc8Pq+qsR2ttKOwHlMArru2vTpLVy7FxifIQzQIyzvN0dLTEhEAOw=="))
 
         self.end = time.time()
         self.started = False
@@ -53,17 +55,24 @@ class App():
     def start(self):
         self.started = True
         self.end = time.time() + datetime.timedelta(minutes=25).total_seconds()
+        requests.get('https://slack.com/api/dnd.setSnooze', params=(('token', self.xoxp_TOKEN), ('num_minutes', '25')))
+        requests.post('https://slack.com/api/users.profile.set', params=(('token', self.xoxp_TOKEN), ('name','status_emoji'), ('value', ':tomato:')))
 
         print("start")
 
     def cancel(self):
         self.started = False
         self.end = time.time()
+        requests.get('https://slack.com/api/dnd.endSnooze', params=(('token', self.xoxp_TOKEN),))
+        requests.post('https://slack.com/api/users.profile.set', params=(('token', self.xoxp_TOKEN), ('name','status_emoji')))
 
         print("canceled")
 
     def complete(self):
         self.started = False
+        requests.get('https://slack.com/api/dnd.endSnooze', params=(('token', self.xoxp_TOKEN),))
+        requests.post('https://slack.com/api/users.profile.set', params=(('token', self.xoxp_TOKEN), ('name','status_emoji')))
+        os.system('say you have completed a pomodoro')
 
         print("completed")
 
